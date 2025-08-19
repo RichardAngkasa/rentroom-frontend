@@ -1,19 +1,18 @@
 import { Link } from "@tanstack/react-router";
 import { ticketPriorityPill, ticketStatusPill } from "../../../constants";
 import { twMerge } from "tailwind-merge";
+import type { Ticket } from "../../../api/ticket";
 
 interface Props {
 	isSelected?: boolean;
-	ticketId: number;
+	ticket: Ticket;
 }
 
-export const TicketCard: React.FC<Props> = ({ isSelected, ticketId }) => {
+export const TicketCard: React.FC<Props> = ({ isSelected, ticket }) => {
+	const { id, title, status, whiteLabel, category } = ticket;
+
 	return (
-		<Link
-			className="block"
-			params={{ ticketId: ticketId.toString() }}
-			to="/ticket/$ticketId"
-		>
+		<Link className="block" params={{ ticketId: id }} to="/ticket/$ticketId">
 			<div
 				className={twMerge(
 					"py-4 border-b border-gray-300 hover:bg-gray-100 transition-colors cursor-pointer",
@@ -25,19 +24,19 @@ export const TicketCard: React.FC<Props> = ({ isSelected, ticketId }) => {
 						<p
 							className={twMerge("font-semibold", isSelected && "text-sky-700")}
 						>
-							ticket name #{ticketId} {ticketStatusPill(1, true)}
+							{title.slice(0, 30) + "..."} {ticketStatusPill(status, true)}
 						</p>
-						<span className="text-sm muted">speed-merchant-6</span>
+						<span className="text-sm muted">{whiteLabel.name}</span>
 					</div>
-					<span className="border rounded-full border-gray-400 px-2 py-1 text-sm">
-						6d
-					</span>
+					{/* <span className="border rounded-full border-gray-400 px-2 py-1 text-sm">
+						3d
+					</span> */}
 				</div>
 				<div className="px-4 flex gap-2 mt-1">
 					<div>{ticketPriorityPill(2)}</div>
 					<div>
 						<span className="text-xs border border-gray-400 rounded-full px-2 py-1">
-							Improvement
+							{category.name}
 						</span>
 					</div>
 				</div>

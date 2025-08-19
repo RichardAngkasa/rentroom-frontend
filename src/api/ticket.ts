@@ -1,0 +1,71 @@
+import xior from "xior";
+
+export interface Ticket {
+	id: string;
+	title: string;
+	description: string;
+	link: string;
+	status: 1 | 2 | 3 | 4;
+	whiteLabelId: string;
+	priority: string;
+	createdAt: Date;
+	updatedAt: Date;
+	finishedAt: null;
+	categoryId: string;
+	reporterNickname: string;
+	assigneeNickname: string;
+	category: Category;
+	whiteLabel: Category;
+	assignee: Assignee;
+	reporter: Assignee;
+}
+
+export interface Assignee {
+	id: string;
+	name: string;
+	email: string;
+}
+
+export interface Category {
+	id: string;
+	name: string;
+}
+
+export interface Meta {
+	isFirstPage: boolean;
+	isLastPage: boolean;
+	currentPage: number;
+	previousPage: null;
+	nextPage: number;
+}
+
+export interface TicketsResponse {
+	data: Array<Ticket>;
+	meta: Meta;
+}
+
+export const fetchTicketsApi = async (
+	page: number
+): Promise<TicketsResponse> => {
+	try {
+		const response = await xior.get<TicketsResponse>(
+			`http://localhost:3000/issues?limit=10&page=${page}`
+		);
+
+		if (!response?.data) {
+			throw new Error("No data received from server");
+		}
+
+		return response.data;
+	} catch (error: unknown) {
+		// Narrow the error
+		if (error instanceof Error) {
+			console.error("API Error:", error.message);
+			throw new Error(`Failed to fetch tickets: ${error.message}`);
+		}
+
+		// Fallback for unexpected error shapes
+		console.error("API Error:", error);
+		throw new Error("Failed to fetch tickets: Unknown error");
+	}
+};

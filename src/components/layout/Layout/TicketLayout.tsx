@@ -1,41 +1,31 @@
-// components/layout/Layout/TicketLayout.tsx
 import { Input, MultiSelect, Pill, Select } from "@mantine/core";
 import { useParams } from "@tanstack/react-router";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React, {
+	type PropsWithChildren,
 	useEffect,
 	useRef,
 	useState,
-	type PropsWithChildren,
 } from "react";
-import xior from "xior"; // Adjust import based on your setup
 import { TicketCard } from "../../../pages/ticket/components/TicketCard";
-
-interface Ticket {
-	id: string;
-}
-
-interface TicketsResponse {
-	tickets: Array<Ticket>;
-	hasMore: boolean;
-}
+import { fetchTicketsApi, type Ticket } from "../../../api/ticket";
 
 interface TicketLayoutProps extends PropsWithChildren {
 	selectedTicketId?: string;
+	onTicketSelect?: (ticket: Ticket | null) => void;
 }
 
 export const TicketLayout: React.FC<TicketLayoutProps> = ({
 	children,
 	selectedTicketId,
+	onTicketSelect,
 }) => {
 	const parameters = useParams({ strict: false });
 	const currentTicketId = parameters?.ticketId || selectedTicketId;
 
-	// SSE state
 	const [sseUpdates, setSseUpdates] = useState<Array<Ticket>>([]);
 	const eventSourceRef = useRef<EventSource | null>(null);
 
-	// Infinite scroll setup
 	const {
 		data,
 		fetchNextPage,
@@ -46,95 +36,118 @@ export const TicketLayout: React.FC<TicketLayoutProps> = ({
 		error,
 	} = useInfiniteQuery({
 		queryKey: ["tickets"],
-		queryFn: async ({ pageParam: pageParameter = 1 }) => {
-			const response = await xior.get<TicketsResponse>(
-				`/issues?limit=10&page=${pageParameter}`
-			);
-			return response.data;
-		},
+		queryFn: async ({ pageParam: page = 1 }) => fetchTicketsApi(page),
 		getNextPageParam: (lastPage, allPages) => {
-			return lastPage.hasMore ? allPages.length + 1 : undefined;
+			return lastPage.meta.nextPage ? allPages.length + 1 : undefined;
 		},
 		initialPageParam: 1,
 	});
 
-	// SSE connection setup
 	useEffect(() => {
-		// Close existing connection
 		if (eventSourceRef.current) {
 			eventSourceRef.current.close();
 		}
 
-		// Create new SSE connection
-		const eventSource = new EventSource("/issues/stream");
+		const eventSource = new EventSource("http://localhost:3000/stream/issues");
 		eventSourceRef.current = eventSource;
 
-		eventSource.onmessage = (event) => {
+		eventSource.onmessage = (event): void => {
 			try {
-				const update = JSON.parse(event.data) as Ticket;
-				setSseUpdates((previous) => {
-					// Remove duplicate if exists and add new update
-					const filtered = previous.filter((ticket) => ticket.id !== update.id);
-					return [update, ...filtered];
-				});
+				const message = JSON.parse(event.data as string);
+
+				// Handle different message types
+				switch (message.type) {
+					case "connected":
+						console.log("Connected to issue stream");
+						break;
+
+					case "heartbeat":
+						// Handle heartbeat if needed
+						break;
+
+					case "issue_update":
+						const { action, data: ticketUpdate } = message;
+
+						if (action === "deleted") {
+							// Remove deleted ticket
+							setSseUpdates((previous) =>
+								previous.filter((ticket) => ticket.id !== ticketUpdate.id)
+							);
+						} else {
+							// Handle created/updated tickets
+							setSseUpdates((previous) => {
+								const filtered = previous.filter(
+									(ticket) => ticket.id !== ticketUpdate.id
+								);
+								return [ticketUpdate, ...filtered];
+							});
+						}
+						break;
+
+					default:
+						console.log("Unknown SSE message type:", message.type);
+				}
 			} catch (error_) {
 				console.error("Error parsing SSE data:", error_);
 			}
 		};
 
-		eventSource.onerror = (error) => {
+		eventSource.onerror = (error): void => {
 			console.error("SSE connection error:", error);
 		};
 
-		// Cleanup on unmount
-		return () => {
+		return (): void => {
 			eventSource.close();
 		};
 	}, []);
 
-	// Infinite scroll observer
 	const loadMoreRef = useRef<HTMLDivElement>(null);
 
 	useEffect(() => {
 		const observer = new IntersectionObserver(
 			(entries) => {
-				if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-					fetchNextPage();
+				const entry = entries[0];
+				if (entry?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+					void fetchNextPage();
 				}
 			},
-			{ threshold: 1.0 }
+			{ threshold: 0.5 }
 		);
 
 		if (loadMoreRef.current) {
 			observer.observe(loadMoreRef.current);
 		}
 
-		return () => {
+		return (): void => {
 			if (loadMoreRef.current) {
 				observer.unobserve(loadMoreRef.current);
 			}
 		};
 	}, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
-	// Merge SSE updates with fetched data
 	const allTickets = React.useMemo(() => {
-		const fetchedTickets = data?.pages.flatMap((page) => page.tickets) ?? [];
+		const fetchedTickets = data?.pages.flatMap((page) => page.data) ?? [];
 
-		// Merge SSE updates, avoiding duplicates
 		const ticketMap = new Map<string, Ticket>();
 
-		// Add fetched tickets first
 		fetchedTickets.forEach((ticket) => {
 			ticketMap.set(ticket.id, ticket);
 		});
 
-		// Override with SSE updates (more recent data)
 		sseUpdates.forEach((ticket) => {
 			ticketMap.set(ticket.id, ticket);
 		});
 
 		return Array.from(ticketMap.values());
 	}, [data, sseUpdates]);
+
+	const selectedTicket = React.useMemo(() => {
+		return allTickets.find((ticket) => ticket.id === currentTicketId) || null;
+	}, [allTickets, currentTicketId]);
+
+	useEffect(() => {
+		onTicketSelect?.(selectedTicket);
+	}, [selectedTicket, onTicketSelect]);
 
 	return (
 		<div className="h-screen">
@@ -190,20 +203,17 @@ export const TicketLayout: React.FC<TicketLayoutProps> = ({
 								<TicketCard
 									key={ticket.id}
 									isSelected={isSelected}
-									ticketId={parseInt(ticket.id)}
+									ticket={ticket}
 								/>
 							);
 						})}
 
-						{/* Loading indicator for infinite scroll */}
 						{isFetchingNextPage && (
 							<div className="p-4 text-center">Loading more tickets...</div>
 						)}
 
-						{/* Intersection observer trigger */}
 						<div ref={loadMoreRef} className="h-4" />
 
-						{/* No more data indicator */}
 						{!hasNextPage && allTickets.length > 0 && (
 							<div className="p-4 text-center text-gray-500">
 								No more tickets to load

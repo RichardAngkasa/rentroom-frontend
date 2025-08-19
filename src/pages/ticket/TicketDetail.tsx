@@ -1,5 +1,4 @@
 import { Chip, Group } from "@mantine/core";
-import { useParams } from "@tanstack/react-router";
 import {
 	FaTelegramPlane,
 	FaClock,
@@ -11,20 +10,26 @@ import { MdClose } from "react-icons/md";
 import { TbMessageReportFilled } from "react-icons/tb";
 import { CardItem } from "./components/CardItem";
 import { ticketPriorityPill, ticketStatusPill } from "../../constants";
+import type { Ticket } from "../../api/ticket";
+import moment from "moment";
 
-export const TicketDetail: React.FC = () => {
-	const { ticketId } = useParams({ from: "/ticket/$ticketId" });
+interface Props {
+	ticket: Ticket | null;
+}
+
+export const TicketDetail: React.FC<Props> = ({ ticket }) => {
+	if (!ticket) return null;
 
 	return (
 		<div className="flex flex-col h-full">
 			<div className="flex justify-between items-center border-b border-gray-300 p-6">
 				<div>
-					<h1 className="text-3xl font-bold">Ticket #{ticketId}</h1>
+					<h1 className="text-3xl font-bold">{ticket.title}</h1>
 					<div className="mt-2 flex gap-2">
 						<span className="text-xs font-semibold rounded-full border px-3 py-1">
-							3 days
+							{moment(ticket.createdAt).fromNow()}
 						</span>
-						{ticketStatusPill(4)}
+						{ticketStatusPill(ticket.status)}
 						{ticketPriorityPill(1)}
 					</div>
 				</div>
@@ -38,12 +43,12 @@ export const TicketDetail: React.FC = () => {
 						<label className="block text-lg text-gray-700 mb-2 font-semibold">
 							Quick Actions
 						</label>
-						<Chip.Group value="1">
+						<Chip.Group value={ticket.status.toString()}>
 							<Group gap="xs" justify="start">
 								<Chip color="grey" value="1">
 									Open
 								</Chip>
-								<Chip color="yellow" value="2">
+								<Chip color="blue" value="2">
 									In Progress
 								</Chip>
 								<Chip color="green" value="3">
@@ -65,7 +70,7 @@ export const TicketDetail: React.FC = () => {
 								title="Message"
 								desc={
 									<span className="underline cursor-pointer text-blue-500 text-sm">
-										https://t.me/blablabla
+										{ticket.link}
 									</span>
 								}
 								icon={
@@ -75,7 +80,7 @@ export const TicketDetail: React.FC = () => {
 								}
 							/>
 							<CardItem
-								desc={<span className="text-sm">Mulyono</span>}
+								desc={<span className="text-sm">{ticket.assignee.name}</span>}
 								title="Assigned to"
 								icon={
 									<div className="bg-gray-500 p-2 rounded inline-block">
@@ -84,7 +89,7 @@ export const TicketDetail: React.FC = () => {
 								}
 							/>
 							<CardItem
-								desc={<span className="text-sm">https://t.me/blablabla</span>}
+								desc={<span className="text-sm">{ticket.reporter.name}</span>}
 								title="Reporter"
 								icon={
 									<div className="bg-amber-500 p-2 rounded inline-block">
@@ -94,19 +99,6 @@ export const TicketDetail: React.FC = () => {
 							/>
 						</div>
 					</div>
-
-					{/* <label className="block text-sm font-medium text-gray-700 mb-2">
-						Priority
-					</label>
-					<span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-sm">
-						High
-					</span>
-					<label className="block text-sm font-medium text-gray-700 mb-2">
-						Status
-					</label>
-					<span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
-						In Progress
-					</span> */}
 
 					<div className="col-span-3 bg-white border rounded-lg border-gray-200 shadow p-6">
 						<label className="block text-lg text-gray-700 mb-2 font-semibold">
@@ -132,8 +124,12 @@ export const TicketDetail: React.FC = () => {
 								}
 							/>
 							<CardItem
-								desc={<span className="text-sm">speed-merchant-3 / asu69</span>}
 								title="Merchant"
+								desc={
+									<span className="text-sm">
+										{ticket.whiteLabel.name} / {ticket.whiteLabel.id}
+									</span>
+								}
 								icon={
 									<div className="bg-red-700 p-2 rounded inline-block">
 										<FaBriefcase className="text-white" size={18} />
@@ -145,7 +141,7 @@ export const TicketDetail: React.FC = () => {
 								desc={
 									<div className="relative">
 										<span className="text-sm px-2 block py-1 border border-gray-400 rounded font-semibold">
-											#2387128312831238761237
+											{ticket.id}
 										</span>
 										{/* <div className="absolute w-full h-full top-0 left-0 bg-green-400 border border-green-600 text-green-800 px-2 py-1 font-semibold text-sm rounded">
 											Copied!
@@ -166,11 +162,7 @@ export const TicketDetail: React.FC = () => {
 							<label className="block text-sm font-medium text-gray-700 mb-2">
 								Description
 							</label>
-							<p className="text-gray-600">
-								This is the description for ticket #{ticketId}. Lorem ipsum
-								dolor sit amet, consectetur adipiscing elit, sed do eiusmod
-								tempor incididunt ut labore et dolore magna aliqua.
-							</p>
+							<p className="text-gray-600">{ticket.description}</p>
 						</div>
 					</div>
 				</div>
