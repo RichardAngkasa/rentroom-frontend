@@ -1,8 +1,6 @@
-# Vite React Boilerplate
+# Syntech Ticketing
 
-![](/public/vite-react-boilerplate.png)
-
-Everything you need to kick off your next Vite + React web app!
+Syntech ticketing
 
 ## Table of Contents
 

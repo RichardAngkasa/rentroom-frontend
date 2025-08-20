@@ -1,18 +1,10 @@
 {
-	"name": "vite-react-boilerplate",
-	"author": "Ricardo Valdovinos <ricardovaldovinos1996@gmail.com>",
-	"description": "A production ready, batteries included starter template for Vite + React projects",
+	"name": "syntech-ticketing",
+	"description": "",
 	"keywords": [
 		"vite",
-		"react",
-		"boilerplate",
-		"starter",
-		"template"
+		"react"
 	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/RicardoValdovinos/vite-react-boilerplate"
-	},
 	"license": "MIT",
 	"version": "1.0.0",
 	"type": "module",

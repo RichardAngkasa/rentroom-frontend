@@ -15,6 +15,14 @@ interface TicketLayoutProps extends PropsWithChildren {
 	onTicketSelect?: (ticket: Ticket | null) => void;
 }
 
+interface SSEMessage {
+	type: "connected" | "heartbeat" | "issue_update";
+	timestamp: string;
+	message?: string;
+	action?: "created" | "updated" | "deleted";
+	data?: Ticket | { id: string };
+}
+
 export const TicketLayout: React.FC<TicketLayoutProps> = ({
 	children,
 	selectedTicketId,
@@ -53,9 +61,8 @@ export const TicketLayout: React.FC<TicketLayoutProps> = ({
 
 		eventSource.onmessage = (event): void => {
 			try {
-				const message = JSON.parse(event.data as string);
+				const message = JSON.parse(event.data as string) as SSEMessage;
 
-				// Handle different message types
 				switch (message.type) {
 					case "connected":
 						console.log("Connected to issue stream");
@@ -65,16 +72,21 @@ export const TicketLayout: React.FC<TicketLayoutProps> = ({
 						// Handle heartbeat if needed
 						break;
 
-					case "issue_update":
-						const { action, data: ticketUpdate } = message;
+					case "issue_update": {
+						if (!message.action || !message.data) {
+							console.warn("Invalid issue_update message:", message);
+							break;
+						}
+
+						const { action, data } = message;
 
 						if (action === "deleted") {
-							// Remove deleted ticket
+							const deletionData = data as { id: string };
 							setSseUpdates((previous) =>
-								previous.filter((ticket) => ticket.id !== ticketUpdate.id)
+								previous.filter((ticket) => ticket.id !== deletionData.id)
 							);
 						} else {
-							// Handle created/updated tickets
+							const ticketUpdate = data as Ticket;
 							setSseUpdates((previous) => {
 								const filtered = previous.filter(
 									(ticket) => ticket.id !== ticketUpdate.id
@@ -82,7 +94,9 @@ export const TicketLayout: React.FC<TicketLayoutProps> = ({
 								return [ticketUpdate, ...filtered];
 							});
 						}
+
 						break;
+					}
 
 					default:
 						console.log("Unknown SSE message type:", message.type);
