@@ -9,7 +9,7 @@ interface Props {
 }
 
 export const TicketCard: React.FC<Props> = ({ isSelected, ticket }) => {
-	const { id, title, status, whiteLabel, category } = ticket;
+	const { id, title, status, whitelabel, category, priority } = ticket;
 
 	return (
 		<Link className="block" params={{ ticketId: id }} to="/ticket/$ticketId">
@@ -26,16 +26,16 @@ export const TicketCard: React.FC<Props> = ({ isSelected, ticket }) => {
 						>
 							{title.slice(0, 30) + "..."} {ticketStatusPill(status, true)}
 						</p>
-						<span className="text-sm muted">{whiteLabel.name}</span>
+						<span className="text-sm muted">{whitelabel.name}</span>
 					</div>
 					{/* <span className="border rounded-full border-gray-400 px-2 py-1 text-sm">
 						3d
 					</span> */}
 				</div>
 				<div className="px-4 flex gap-2 mt-1">
-					<div>{ticketPriorityPill(2)}</div>
+					<div>{ticketPriorityPill(priority)}</div>
 					<div>
-						<span className="text-xs border border-gray-400 rounded-full px-2 py-1">
+						<span className="text-xs border border-gray-400 rounded px-2">
 							{category.name}
 						</span>
 					</div>

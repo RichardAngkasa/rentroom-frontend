@@ -6,16 +6,14 @@ export interface Ticket {
 	description: string;
 	link: string;
 	status: 1 | 2 | 3 | 4;
-	whiteLabelId: string;
-	priority: string;
+	whitelabelId: string;
+	priority: 1 | 2 | 3;
 	createdAt: Date;
 	updatedAt: Date;
 	finishedAt: null;
 	categoryId: string;
-	reporterNickname: string;
-	assigneeNickname: string;
 	category: Category;
-	whiteLabel: Category;
+	whitelabel: Category;
 	assignee: Assignee;
 	reporter: Assignee;
 }
@@ -23,7 +21,6 @@ export interface Ticket {
 export interface Assignee {
 	id: string;
 	name: string;
-	email: string;
 }
 
 export interface Category {

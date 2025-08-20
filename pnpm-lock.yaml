@@ -17,6 +17,9 @@ importers:
       '@mantine/hooks':
         specifier: ^8.2.5
         version: 8.2.5(react@19.1.0)
+      '@microsoft/fetch-event-source':
+        specifier: ^2.0.1
+        version: 2.0.1
       '@nivo/bar':
         specifier: ^0.99.0
         version: 0.99.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -893,6 +896,9 @@ packages:
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
+
+  '@microsoft/fetch-event-source@2.0.1':
+    resolution: {integrity: sha512-W6CLUJ2eBMw3Rec70qrsEW0jOm/3twwJv21mrmj2yORiaVmVYGS4sSS5yUwvQc1ZlDLYGPnClVWmUUMagKNsfA==}
 
   '@nivo/annotations@0.99.0':
     resolution: {integrity: sha512-jCuuXPbvpaqaz4xF7k5dv0OT2ubn5Nt0gWryuTe/8oVsC/9bzSuK8bM9vBty60m9tfO+X8vUYliuaCDwGksC2g==}
@@ -5462,6 +5468,8 @@ snapshots:
       '@types/mdx': 2.0.13
       '@types/react': 19.1.8
       react: 19.1.0
+
+  '@microsoft/fetch-event-source@2.0.1': {}
 
   '@nivo/annotations@0.99.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)':
     dependencies:

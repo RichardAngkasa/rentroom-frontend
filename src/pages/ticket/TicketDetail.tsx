@@ -12,6 +12,7 @@ import { CardItem } from "./components/CardItem";
 import { ticketPriorityPill, ticketStatusPill } from "../../constants";
 import type { Ticket } from "../../api/ticket";
 import moment from "moment";
+import { Link } from "@tanstack/react-router";
 
 interface Props {
 	ticket: Ticket | null;
@@ -30,11 +31,13 @@ export const TicketDetail: React.FC<Props> = ({ ticket }) => {
 							{moment(ticket.createdAt).fromNow()}
 						</span>
 						{ticketStatusPill(ticket.status)}
-						{ticketPriorityPill(1)}
+						{ticketPriorityPill(ticket.priority)}
 					</div>
 				</div>
 				<div>
-					<MdClose className="cursor-pointer" size={24} />
+					<Link to="/ticket">
+						<MdClose className="cursor-pointer" size={24} />
+					</Link>
 				</div>
 			</div>
 			<div className="bg-gray-50 px-6 pt-6" style={{ flex: 1 }}>
@@ -127,7 +130,7 @@ export const TicketDetail: React.FC<Props> = ({ ticket }) => {
 								title="Merchant"
 								desc={
 									<span className="text-sm">
-										{ticket.whiteLabel.name} / {ticket.whiteLabel.id}
+										{ticket.whitelabel.name} / {ticket.whitelabel.id}
 									</span>
 								}
 								icon={
