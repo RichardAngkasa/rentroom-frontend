@@ -14,7 +14,7 @@ export interface Ticket {
 	categoryId: string;
 	category: Category;
 	whitelabel: Category;
-	assignee: Assignee;
+	assignee: Assignee | null;
 	reporter: Assignee;
 }
 

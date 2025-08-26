@@ -26,7 +26,9 @@ export const TicketCard: React.FC<Props> = ({ isSelected, ticket }) => {
 						>
 							{title.slice(0, 30) + "..."} {ticketStatusPill(status, true)}
 						</p>
-						<span className="text-sm muted">{whitelabel.name}</span>
+						<span className="text-sm muted">
+							{whitelabel.id} - {whitelabel.name}
+						</span>
 					</div>
 					{/* <span className="border rounded-full border-gray-400 px-2 py-1 text-sm">
 						3d

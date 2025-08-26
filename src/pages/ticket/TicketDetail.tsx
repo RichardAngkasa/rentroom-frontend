@@ -83,8 +83,12 @@ export const TicketDetail: React.FC<Props> = ({ ticket }) => {
 								}
 							/>
 							<CardItem
-								desc={<span className="text-sm">{ticket.assignee.name}</span>}
 								title="Assigned to"
+								desc={
+									<span className="text-sm">
+										{ticket.assignee ? ticket.assignee.name : "-"}
+									</span>
+								}
 								icon={
 									<div className="bg-gray-500 p-2 rounded inline-block">
 										<FaClock className="text-white" size={18} />
@@ -162,10 +166,15 @@ export const TicketDetail: React.FC<Props> = ({ ticket }) => {
 
 					<div className="col-span-6 bg-white border rounded-lg border-gray-200 shadow p-6">
 						<div>
-							<label className="block text-sm font-medium text-gray-700 mb-2">
-								Description
+							<label className="block text-lg text-gray-700 mb-2 font-semibold">
+								Content
 							</label>
-							<p className="text-gray-600">{ticket.description}</p>
+							<p
+								dangerouslySetInnerHTML={{
+									__html: ticket.description.split("\n").join("<br />"),
+								}}
+								className="text-gray-600"
+							></p>
 						</div>
 					</div>
 				</div>
