@@ -4,6 +4,7 @@ import React, { type PropsWithChildren, useEffect, useRef } from "react";
 import { TicketCard } from "../../../pages/ticket/components/TicketCard";
 import type { Ticket } from "../../../api/ticket";
 import { useTicketData } from "../../../hooks/useTickets";
+import { twMerge } from "tailwind-merge";
 
 interface TicketLayoutProps extends PropsWithChildren {
 	selectedTicketId?: string;
@@ -67,9 +68,14 @@ export const TicketLayout: React.FC<TicketLayoutProps> = ({
 	return (
 		<div className="h-screen">
 			<nav className="absolute w-screen">
-				<div className="text-right text-xs text-gray-500 p-2">
-					SSE Status: {isConnected ? "Connected" : "Disconnected"} | Fetched
-					Tickets: {allTickets.length}
+				<div className="text-right text-xs p-2">
+					SSE Status:{" "}
+					<span
+						className={twMerge(isConnected ? "text-green-600" : "text-red-600")}
+					>
+						{isConnected ? "Connected" : "Disconnected"}
+					</span>{" "}
+					| Fetched Tickets: {allTickets.length}
 				</div>
 			</nav>
 			<div className="flex h-full">

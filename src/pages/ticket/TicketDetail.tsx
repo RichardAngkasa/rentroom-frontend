@@ -10,16 +10,39 @@ import { MdClose } from "react-icons/md";
 import { TbMessageReportFilled } from "react-icons/tb";
 import { CardItem } from "./components/CardItem";
 import { ticketPriorityPill, ticketStatusPill } from "../../constants";
-import type { Ticket } from "../../api/ticket";
+import { updateTicketStatusApi, type Ticket } from "../../api/ticket";
 import moment from "moment";
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 
 interface Props {
 	ticket: Ticket | null;
+	onStatusUpdate?: (newStatus: number) => void;
 }
 
-export const TicketDetail: React.FC<Props> = ({ ticket }) => {
+export const TicketDetail: React.FC<Props> = ({ ticket, onStatusUpdate }) => {
+	const [isUpdating, setIsUpdating] = useState(false);
 	if (!ticket) return null;
+
+	const updateTicketStatus = async (newStatus: number): Promise<void> => {
+		if (newStatus === ticket.status || isUpdating) return;
+
+		setIsUpdating(true);
+		try {
+			const result = await updateTicketStatusApi({
+				ticketId: ticket.id,
+				status: newStatus,
+			});
+
+			if (result.success) {
+				onStatusUpdate?.(newStatus);
+			}
+		} catch (error) {
+			console.error("Error updating ticket status:", error);
+		} finally {
+			setIsUpdating(false);
+		}
+	};
 
 	return (
 		<div className="flex flex-col h-full">
@@ -40,13 +63,18 @@ export const TicketDetail: React.FC<Props> = ({ ticket }) => {
 					</Link>
 				</div>
 			</div>
-			<div className="bg-gray-50 px-6 pt-6" style={{ flex: 1 }}>
+			<div className="bg-gray-50 px-6 py-6" style={{ flex: 1 }}>
 				<div className="grid grid-cols-6 gap-6">
 					<div className="col-span-6 bg-white border rounded-lg border-gray-200 shadow p-6">
 						<label className="block text-lg text-gray-700 mb-2 font-semibold">
 							Quick Actions
 						</label>
-						<Chip.Group value={ticket.status.toString()}>
+						<Chip.Group
+							value={ticket.status.toString()}
+							onChange={(value) => {
+								void updateTicketStatus(Number(value));
+							}}
+						>
 							<Group gap="xs" justify="start">
 								<Chip color="grey" value="1">
 									Open
@@ -113,8 +141,12 @@ export const TicketDetail: React.FC<Props> = ({ ticket }) => {
 						</label>
 						<div className="flex flex-col gap-4">
 							<CardItem
-								desc={<span className="text-sm">27 Jun 2023</span>}
 								title="Created"
+								desc={
+									<span className="text-sm">
+										{moment(ticket.createdAt).format("DD MMM YYYY, HH:mm")}
+									</span>
+								}
 								icon={
 									<div className="bg-green-700 p-2 rounded inline-block">
 										<TbMessageReportFilled className="text-white" size={18} />
@@ -122,8 +154,12 @@ export const TicketDetail: React.FC<Props> = ({ ticket }) => {
 								}
 							/>
 							<CardItem
-								desc={<span className="text-sm">29 Jun 2023</span>}
 								title="Last Update"
+								desc={
+									<span className="text-sm">
+										{moment(ticket.updatedAt).format("DD MMM YYYY, HH:mm")}
+									</span>
+								}
 								icon={
 									<div className="bg-lime-700 p-2 rounded inline-block">
 										<FaCalendarAlt className="text-white" size={18} />

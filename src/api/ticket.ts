@@ -46,7 +46,39 @@ export const fetchTicketsApi = async (
 ): Promise<TicketsResponse> => {
 	try {
 		const response = await xior.get<TicketsResponse>(
-			`http://localhost:3000/issues?limit=10&page=${page}`
+			`${import.meta.env["VITE_APP_BASEURL"]}/issues?limit=10&page=${page}`
+		);
+
+		if (!response?.data) {
+			throw new Error("No data received from server");
+		}
+
+		return response.data;
+	} catch (error: unknown) {
+		// Narrow the error
+		if (error instanceof Error) {
+			console.error("API Error:", error.message);
+			throw new Error(`Failed to fetch tickets: ${error.message}`);
+		}
+
+		// Fallback for unexpected error shapes
+		console.error("API Error:", error);
+		throw new Error("Failed to fetch tickets: Unknown error");
+	}
+};
+
+interface TicketStatusUpdatePayload {
+	ticketId: string;
+	status: number;
+}
+
+export const updateTicketStatusApi = async (
+	payload: TicketStatusUpdatePayload
+): Promise<{ success: boolean }> => {
+	try {
+		const response = await xior.post<{ success: boolean }>(
+			`${import.meta.env["VITE_APP_BASEURL"]}/status`,
+			payload
 		);
 
 		if (!response?.data) {

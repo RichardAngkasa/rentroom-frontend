@@ -12,7 +12,7 @@ export interface WhitelabelResponse {
 export const getWhitelabels = async (): Promise<WhitelabelResponse> => {
 	try {
 		const response = await xior.get<WhitelabelResponse>(
-			`http://localhost:3000/whitelabels`
+			`${import.meta.env["VITE_APP_BASEURL"]}/whitelabels`
 		);
 
 		if (!response?.data) {
